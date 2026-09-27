@@ -1,0 +1,194 @@
+---
+title: "M05-Visualizing Data with Tables for MSDM CEP"
+author: "Ruben Garcia"
+date: '`r format(Sys.time())`'
+format: 
+  html: 
+    toc: true
+    toc-location: left
+    toc-title: "✨ On This Page ✨"
+    number-sections: true
+    code-link: true
+    code-fold: true
+    embed-resources: true
+    theme: flatly
+    fontsize: 1.05em
+    mainfont: "Poppins"
+    css: pride-theme.css
+editor: visual
+execute: 
+  freeze: auto
+  echo: false
+  message: false
+---
+
+# Visualizing Data with Tables
+
+While conducting research, numbers, responses, and overall data will be collected into one database.
+
+It will be the duty of the researcher to analyze the raw data and determine what parts and combinations of the information will be useful in answering the hypothesis at hand.
+
+If data is left unfiltered it becomes challenging in order to provide quantitative evidence of the solution needed.
+
+## *gt* and *gtExtra*
+
+- Excellent packages in R studio that allow accessible table and data analysis
+
+- *gt* is the ability to create tables, structure how tables are set up, and directly works with the data provided by the researcher
+
+- *gtExtra* allows for that polished table to read clearly as well as set up themes and more variety of options to showcase the tables in a coherent want
+
+## Tables vs. Charts
+
+Both are incredible yet different ways of showcasing data and findings in a report or presentation.
+
+Together that are not competing tools, but complete different jobs in order to create fuller picture of the date being presented.
+
+> Charts
+>
+> - Fantastic for showcasing patterns and trends
+>
+> - Comparing variables without exact numbers
+>
+> - Showcase relationships between correlation and distribution (X and Y axis)
+
+> Tables
+>
+> - Showcase exactly, precise values
+>
+> - Displays a larger amount of data in rows and columns that is not visually cluttered
+>
+> - Tables are searchable and researchers can analyze specific rows and columns with tools
+>
+> - Quantitative and Qualitative data can be recorded into tables for easy access
+
+Although Separately they have their own functions: together they provide a clearer understanding on the data as well as visual representation for both the researcher and the audience to understand.
+
+### Examples With PizzaPlace Data: RAW
+
+Although data will be implemented with AO1; there is currently no data to present at the moment, so I will utilize the Pizza Place Data found in the *gt* package.
+
+```{r}
+library(gt)
+library(gtExtras)
+
+data("pizzaplace")
+head(pizzaplace)
+
+```
+
+> This is a full table with all the information in it. To make it easier to digest; it can be sorted and visualized in many ways.
+
+#### Ex. *Titles/Color*
+
+```{r}
+#| message: false
+library(gt)
+library(gtExtras)
+library(dplyr)
+library(lubridate)
+
+orders_by_hour <- pizzaplace %>%
+  mutate(hour = hour(hms::as_hms(time))) %>%
+  group_by(hour) %>%
+  summarize(
+    orders = n(),
+    total_revenue = sum(price),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(orders))   # <-- sorts hours by busiest first
+
+orders_by_hour %>%
+  gt(rowname_col = "hour") %>%
+  tab_header(
+    title = "When Are Pizzas Actually Being Ordered?",
+    subtitle = "Hours ranked from busiest to slowest"
+  ) %>%
+  tab_stubhead(label = "Hour") %>%
+  cols_label(
+    orders = "Orders Placed",
+    total_revenue = "Total Revenue"
+  ) %>%
+  tab_spanner(
+    label = "Order Volume Summary",
+    columns = c(orders, total_revenue)
+  ) %>%
+  fmt_currency(columns = total_revenue, decimals = 2) %>%
+  data_color(
+    columns = orders,
+    fn = scales::col_numeric(palette = c("#dbeafe", "#1e3a8a"), domain = NULL)
+  ) %>%
+  gt_plt_bar(column = orders, color = "#2563eb", scale_type = "number") %>%
+  tab_source_note(source_note = "Source: pizzaplace dataset, gt package.") %>%
+  tab_footnote(
+    footnote = "Hour extracted from the order timestamp (24-hour format).",
+    locations = cells_stubhead()
+  ) %>%
+  tab_footnote(
+    footnote = "Total Revenue reflects the sum of all order prices placed during that hour.",
+    locations = cells_column_labels(columns = total_revenue)
+  )
+```
+
+### Ex. 2: *Organization for Specific Analysis* 
+
+```{r}
+#| message: false
+library(gt)
+library(gtExtras)
+library(dplyr)
+library(stringr)
+
+top5_pizzas <- pizzaplace %>%
+  mutate(
+    name = str_replace_all(name, "_", " "),
+    name = str_replace_all(name, regex("ckn", ignore_case = TRUE), "Chicken"),
+    name = str_replace_all(name, regex("dlx", ignore_case = TRUE), "Delux"),
+    name = str_to_title(name)
+  ) %>%
+  group_by(name) %>%
+  summarize(
+    orders = n(),
+    avg_price = mean(price),
+    .groups = "drop"
+  ) %>%
+  slice_max(orders, n = 5) %>%
+  arrange(desc(orders))   # <-- sorted by popularity now, not price
+
+top5_pizzas %>%
+  gt(rowname_col = "name") %>%
+  tab_header(
+    title = "Fan Favorites, Ranked by Popularity",
+    subtitle = "The 5 most frequently ordered pizzas, most to least popular"
+  ) %>%
+  tab_stubhead(label = "Pizza") %>%
+  cols_label(
+    orders = "Times Ordered",
+    avg_price = "Average Price"
+  ) %>%
+  tab_spanner(
+    label = "Popularity & Price",
+    columns = c(orders, avg_price)
+  ) %>%
+  fmt_currency(columns = avg_price, decimals = 2) %>%
+  data_color(
+    columns = avg_price,
+    fn = scales::col_numeric(palette = c("#fef3c7", "#b45309"), domain = NULL)
+  ) %>%
+  gt_plt_bar(column = orders, color = "#b45309", scale_type = "number") %>%
+  tab_source_note(source_note = "Source: pizzaplace dataset, gt package.") %>%
+  tab_footnote(
+    footnote = "Popularity measured by total number of orders across the full dataset.",
+    locations = cells_column_labels(columns = orders)
+  ) %>%
+  tab_footnote(
+    footnote = "Average Price reflects the mean price across all sizes ordered for that pizza.",
+    location= cells_column_labels(columns = avg_price)
+  )
+```
+
+- These tables are able to break down the information with digestible information
+
+- With my particular AO it is important to recognize the impact data and numbers make over time paired with Qualitative responses
+
+- Being able to showcase tables with responses will allow presentations and documents to have the proper evidence to support the hypothesis

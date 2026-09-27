@@ -1,0 +1,25 @@
+h1, h2, h3 {
+  background: linear-gradient(90deg, #ff5f6d, #ffc371, #47cf73, #2fa4ff, #a45eff) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.title {
+  background: linear-gradient(90deg, #ff5f6d, #ffc371, #47cf73, #2fa4ff, #a45eff) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  font-weight: 800 !important;
+}
+
+a {
+  color: #2fa4ff !important;
+}
+
+a:hover {
+  color: #a45eff !important;
+}
